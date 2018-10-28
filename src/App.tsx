@@ -14,6 +14,7 @@ const pEnd = (str: string) => console.timeEnd(str)
 
 const printBoard = (board: GameBoard): void => {
   let str = ''
+  /* tslint:disable:prefer-for-of */
   for (let i = 0; i < board.length; i++) {
     for (let j = 0; j < board.length; j++) {
       if (j + 1 === board.length) {

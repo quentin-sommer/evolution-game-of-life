@@ -83,6 +83,7 @@ const resolveXTurn = (gameBoard: GameBoard, x: number): GameBoard => {
 }
 export const boardScore = (board: GameBoard) => {
   let res = 0
+  /* tslint:disable:prefer-for-of */
   for (let i = 0; i < board.length; i++) {
     for (let j = 0; j < board.length; j++) {
       res += board[i][j]
