@@ -1,8 +1,6 @@
-// @flow
-
 import greenlet from 'greenlet'
 
-export type GameBoard = Array<Array<number>>
+export type GameBoard = number[][]
 
 export const resolveTurn = (gameBoard: GameBoard): GameBoard => {
   const tmp = gameBoard.map(arr => arr.slice())
@@ -39,28 +37,32 @@ export const resolveTurn = (gameBoard: GameBoard): GameBoard => {
 }
 
 const resolveXTurn = (gameBoard: GameBoard, x: number): GameBoard => {
-  const resolveTurn = (gameBoard: GameBoard): GameBoard => {
-    const tmp = gameBoard.map(arr => arr.slice())
-    for (let i = 0; i < gameBoard.length; i++) {
-      for (let j = 0; j < gameBoard.length; j++) {
+  const resolveTurnAsync = (gameBoard2: GameBoard): GameBoard => {
+    const tmp = gameBoard2.map(arr => arr.slice())
+    for (let i = 0; i < gameBoard2.length; i++) {
+      for (let j = 0; j < gameBoard2.length; j++) {
         // new val
         let count = 0
         // haut droit
-        count += (gameBoard[i - 1] !== undefined && gameBoard[i - 1][j + 1]) || 0
+        count +=
+          (gameBoard2[i - 1] !== undefined && gameBoard2[i - 1][j + 1]) || 0
         // haut
-        count += (gameBoard[i - 1] !== undefined && gameBoard[i - 1][j]) || 0
+        count += (gameBoard2[i - 1] !== undefined && gameBoard2[i - 1][j]) || 0
         // haut gauche
-        count += (gameBoard[i - 1] !== undefined && gameBoard[i - 1][j - 1]) || 0
+        count +=
+          (gameBoard2[i - 1] !== undefined && gameBoard2[i - 1][j - 1]) || 0
         // gauche
-        count += (gameBoard[i] !== undefined && gameBoard[i][j - 1]) || 0
+        count += (gameBoard2[i] !== undefined && gameBoard2[i][j - 1]) || 0
         // bas gauche
-        count += (gameBoard[i + 1] !== undefined && gameBoard[i + 1][j - 1]) || 0
+        count +=
+          (gameBoard2[i + 1] !== undefined && gameBoard2[i + 1][j - 1]) || 0
         // bas
-        count += (gameBoard[i + 1] !== undefined && gameBoard[i + 1][j]) || 0
+        count += (gameBoard2[i + 1] !== undefined && gameBoard2[i + 1][j]) || 0
         // bas droit
-        count += (gameBoard[i + 1] !== undefined && gameBoard[i + 1][j + 1]) || 0
+        count +=
+          (gameBoard2[i + 1] !== undefined && gameBoard2[i + 1][j + 1]) || 0
         // droit
-        count += (gameBoard[i] !== undefined && gameBoard[i][j + 1]) || 0
+        count += (gameBoard2[i] !== undefined && gameBoard2[i][j + 1]) || 0
         if (count > 3) {
           tmp[i][j] = 0
         } else if (count === 3) {
@@ -74,7 +76,7 @@ const resolveXTurn = (gameBoard: GameBoard, x: number): GameBoard => {
   }
   let res = gameBoard
   for (let i = 0; i < x; i++) {
-    res = resolveTurn(res)
+    res = resolveTurnAsync(res)
   }
 
   return res

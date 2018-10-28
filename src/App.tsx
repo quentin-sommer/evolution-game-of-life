@@ -1,17 +1,16 @@
-// @flow
-import type {GameBoard} from './ResolveTurn'
-import React, {Component} from 'react'
+import React from 'react'
+import BoardDisplay from './BoardDisplay'
+import {tournamentSelection} from './Evolution'
+import {GameBoard} from './ResolveTurn'
 import {
-  createTurnResolver,
   boardScore,
   createAsyncTurnResolver,
   createAsyncXTurnResolver,
+  createTurnResolver,
 } from './ResolveTurn'
-import BoardDisplay from './BoardDisplay'
-import {tournamentSelection} from './Evolution'
 
-const perfStart = str => console.time(str)
-const perfEnd = str => console.timeEnd(str)
+const pStart = (str: string) => console.time(str)
+const pEnd = (str: string) => console.timeEnd(str)
 
 const printBoard = (board: GameBoard): void => {
   let str = ''
@@ -35,14 +34,16 @@ const createRandomXbyXDispotition = (
   new Array(width)
     .fill(0)
     .map(val =>
-      new Array(width).fill(0).map(() => (Math.random() < lifeProbability ? 1 : 0))
+      new Array(width)
+        .fill(0)
+        .map(() => (Math.random() < lifeProbability ? 1 : 0))
     )
 
 const placeDispositionInsidePlayground = (
   disposition: GameBoard,
   playgroundWidth: number,
   fillValue: number = 0
-) => {
+): GameBoard => {
   const tmp = disposition.map(arr => arr.slice())
 
   if (disposition.length > playgroundWidth) {
@@ -74,51 +75,32 @@ const playXTurns = async (board: GameBoard, x: number) => {
   return tmp
 }
 
-const resolvePopulation = async (boards: Array<GameBoard>, turnsToPlay: number) => {
+const resolvePopulation = async (boards: GameBoard[], turnsToPlay: number) => {
   return Promise.all(
-    boards.map(async board => await createAsyncXTurnResolver()(board, turnsToPlay))
+    boards.map(
+      async board => await createAsyncXTurnResolver()(board, turnsToPlay)
+    )
   )
 }
 
-type GameBoardState = Array<{start: GameBoard, result: GameBoard}>
-class App extends Component<
-  null,
-  {
-    boardSize: number,
-    seedSize: number,
-    boards: GameBoardState,
-  }
-> {
-  state = {
+type GameBoardState = Array<{start: GameBoard; result: GameBoard}>
+interface IState {
+  boardSize: number
+  seedSize: number
+  boards: GameBoardState
+}
+
+class App extends React.Component<any, IState> {
+  public state: Readonly<IState> = {
     boardSize: 130,
-    seedSize: 10,
     boards: [],
+    seedSize: 10,
   }
-  playTurn() {}
-  startGame = async () => {
-    const boards: GameBoardState = []
-    const turnsToPlay = 200
-    const resolves = []
-    for (let i = 0; i < 10; i++) {
-      const start = placeDispositionInsidePlayground(
-        createRandomXbyXDispotition(this.state.seedSize),
-        this.state.boardSize
-      )
-      boards.push({start, result: []})
-    }
-    perfStart('resolving')
-    const resolved = await resolvePopulation(boards.map(b => b.start), turnsToPlay)
-    perfEnd('resolving')
-    perfStart('scoring')
-    console.log('resolved', resolved.map(b => boardScore(b)))
-    perfEnd('scoring')
-    const boardsWithResolved = boards.map((b, index) => ({...b, result: resolved[index]}))
-    this.setState({boards: boardsWithResolved})
-  }
-  componentDidMount() {
+  public componentDidMount() {
     this.startGame()
   }
-  render() {
+
+  public render() {
     const {boards} = this.state
     return (
       <div>
@@ -127,13 +109,39 @@ class App extends Component<
           <div key={idx}>
             {boardScore(b.start)} - {boardScore(b.result)}
             <div>
-              <BoardDisplay board={b.start} />-
-              <BoardDisplay board={b.result} />
+              <BoardDisplay board={b.start} />-<BoardDisplay board={b.result} />
             </div>
           </div>
         ))}
       </div>
     )
+  }
+
+  private startGame = async () => {
+    const boards: GameBoardState = []
+    const turnsToPlay = 200
+
+    for (let i = 0; i < 10; i++) {
+      const start = placeDispositionInsidePlayground(
+        createRandomXbyXDispotition(this.state.seedSize),
+        this.state.boardSize
+      )
+      boards.push({start, result: []})
+    }
+    pStart('resolving')
+    const resolved = await resolvePopulation(
+      boards.map(b => b.start),
+      turnsToPlay
+    )
+    pEnd('resolving')
+    pStart('scoring')
+    console.log('resolved', resolved.map(b => boardScore(b)))
+    pEnd('scoring')
+    const boardsWithResolved = boards.map((b, index) => ({
+      ...b,
+      result: resolved[index],
+    }))
+    this.setState({boards: boardsWithResolved})
   }
 }
 
